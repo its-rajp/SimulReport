@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.core.orchestrator import ReportOrchestrator
 from src.core.data_validator import DataValidator
+from src.core.tasks import generate_report_task
 from database import get_db
 from models import Report
 import shutil
@@ -34,7 +35,7 @@ async def generate_report(
     project_name: str = Form("Untitled"),
     db: Session = Depends(get_db)
 ):
-    # Save uploaded files
+    # Save uploaded files quickly
     uploaded_paths = []
     for file in files:
         file_path = UPLOADS_DIR / file.filename
@@ -42,14 +43,38 @@ async def generate_report(
             shutil.copyfileobj(file.file, buffer)
         uploaded_paths.append(str(file_path))
     
-    # Generate report
+    # Create DB record immediately
+    db_report = Report(
+        project_name=project_name,
+        industry=industry,
+        service=service,
+        status="Queued"
+    )
+    db.add(db_report)
+    db.commit()
+    db.refresh(db_report)
+    
+    # Dispatch Celery background task
     params = {"industry": industry, "service": service, "project_name": project_name}
-    report_path = orchestrator.generate_full_report(uploaded_paths, params, db)
+    generate_report_task.delay(db_report.id, uploaded_paths, params)
     
     return {
         "status": "success",
-        "report_path": report_path,
-        "download_url": f"/download/{Path(report_path).name}"
+        "message": "Report generation queued",
+        "job_id": db_report.id
+    }
+
+@app.get("/job-status/{job_id}")
+def get_job_status(job_id: int, db: Session = Depends(get_db)):
+    db_report = db.query(Report).filter(Report.id == job_id).first()
+    if not db_report:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    return {
+        "job_id": db_report.id,
+        "status": db_report.status,
+        "file_name": Path(db_report.file_path).name if db_report.file_path else None,
+        "download_url": f"/download/{Path(db_report.file_path).name}" if db_report.file_path else None,
     }
 
 @app.get("/reports")

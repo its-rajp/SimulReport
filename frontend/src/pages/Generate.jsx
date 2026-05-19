@@ -64,6 +64,27 @@ const Generate = () => {
     navigate('/sandbox', { state: { files, service, projectName, industry } });
   };
 
+  const pollJobStatus = async (jobId) => {
+    try {
+      const res = await fetch(`${API_URL}/job-status/${jobId}`);
+      if (!res.ok) throw new Error('Failed to get status');
+      const data = await res.json();
+      
+      if (data.status === 'Complete') {
+        navigate('/dashboard');
+      } else if (data.status === 'Failed' || data.status === 'error') {
+        alert('Error generating report. Please check the backend logs.');
+        setIsGenerating(false);
+      } else {
+        // Still Generating or Queued, poll again in 3 seconds
+        setTimeout(() => pollJobStatus(jobId), 3000);
+      }
+    } catch (e) {
+      console.error('Polling error', e);
+      setIsGenerating(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (files.length === 0) { alert("Please upload at least one data file."); return; }
@@ -76,8 +97,13 @@ const Generate = () => {
     try {
       const response = await fetch(`${API_URL}/generate-report`, { method: 'POST', body: formData });
       if (!response.ok) throw new Error('API request failed');
-      await response.json();
-      navigate('/dashboard');
+      const data = await response.json();
+      
+      if (data.job_id) {
+        pollJobStatus(data.job_id);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error(error);
       alert("Error generating report. Please check the backend logs.");

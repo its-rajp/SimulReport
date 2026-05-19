@@ -53,6 +53,27 @@ const DataSandbox = () => {
     loadPreview(selectedFileIdx);
   }, [selectedFileIdx]);
 
+  const pollJobStatus = async (jobId) => {
+    try {
+      const res = await fetch(`${API_URL}/job-status/${jobId}`);
+      if (!res.ok) throw new Error('Failed to get status');
+      const data = await res.json();
+      
+      if (data.status === 'Complete') {
+        navigate('/dashboard');
+      } else if (data.status === 'Failed' || data.status === 'error') {
+        alert('Error generating report. Please check the backend logs.');
+        setIsGenerating(false);
+      } else {
+        // Still Generating or Queued, poll again in 3 seconds
+        setTimeout(() => pollJobStatus(jobId), 3000);
+      }
+    } catch (e) {
+      console.error('Polling error', e);
+      setIsGenerating(false);
+    }
+  };
+
   const handleGenerateReport = async () => {
     setIsGenerating(true);
     const formData = new FormData();
@@ -63,8 +84,13 @@ const DataSandbox = () => {
     try {
       const res = await fetch(`${API_URL}/generate-report`, { method: 'POST', body: formData });
       if (!res.ok) throw new Error('Generation failed');
-      await res.json();
-      navigate('/dashboard');
+      const data = await res.json();
+      
+      if (data.job_id) {
+        pollJobStatus(data.job_id);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (e) {
       alert('Error generating report. Please try again.');
       setIsGenerating(false);

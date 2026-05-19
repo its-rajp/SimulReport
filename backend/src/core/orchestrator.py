@@ -15,8 +15,8 @@ class ReportOrchestrator:
         self.file_parser = FileParser()
     
     def generate_full_report(self, file_paths: list, params: dict, db):
-        """Main orchestrator workflow"""
-        logger.info("Starting report generation...")
+        """Main orchestrator workflow for synchronous requests"""
+        logger.info("Starting synchronous report generation...")
         
         # Create db record
         db_report = Report(
@@ -28,6 +28,20 @@ class ReportOrchestrator:
         db.add(db_report)
         db.commit()
         db.refresh(db_report)
+        
+        return self._run_generation_pipeline(db_report, file_paths, params, db)
+
+    def generate_full_report_with_id(self, report_id: int, file_paths: list, params: dict, db):
+        """Workflow for Celery background tasks (DB record already exists)"""
+        logger.info(f"Starting async report generation for task {report_id}...")
+        db_report = db.query(Report).filter(Report.id == report_id).first()
+        if not db_report:
+            raise ValueError(f"Report ID {report_id} not found")
+        
+        return self._run_generation_pipeline(db_report, file_paths, params, db)
+
+    def _run_generation_pipeline(self, db_report, file_paths: list, params: dict, db):
+        """Core pipeline logic"""
         
         try:
             # 1. Parse all files
