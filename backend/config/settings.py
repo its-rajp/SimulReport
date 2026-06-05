@@ -20,13 +20,14 @@ else:
     UPLOADS_DIR = _DATA / "uploads"
     PROCESSED_DIR = _DATA / "processed"
     TEMPLATES_DIR = _DATA / "templates"
-    DB_DIR = _BASE / "db"
 
 # Ensure all directories exist at startup
-for directory in [UPLOADS_DIR, PROCESSED_DIR, TEMPLATES_DIR, DB_DIR]:
+for directory in [UPLOADS_DIR, PROCESSED_DIR, TEMPLATES_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 INDUSTRIES = ["Oil & Gas", "Chemicals", "Pharmaceuticals", "Food & Beverages", "Metal & Mining", "Power Generation"]
 SERVICES = ["CFD", "FEA", "DEM", "Process Modeling", "EFD"]
-DATABASE_URL = f"sqlite:///{DB_DIR}/reports.db"
+
+# MongoDB — single source of truth for all data
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/report_generator")

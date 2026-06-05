@@ -8,15 +8,16 @@ sys.path.insert(0, str(backend_dir))
 
 from celery import Celery
 from loguru import logger
-from database import SessionLocal
+from models import update_report_status
 from src.core.orchestrator import ReportOrchestrator
-from models import Report
+
+redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
 # Initialize Celery app with Redis broker
 celery_app = Celery(
     "report_tasks",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
+    broker=redis_url,
+    backend=redis_url,
 )
 
 celery_app.conf.update(
@@ -29,32 +30,17 @@ celery_app.conf.update(
 
 orchestrator = ReportOrchestrator()
 
+
 @celery_app.task(bind=True, name="generate_report_task")
-def generate_report_task(self, report_id: int, file_paths: list, params: dict):
+def generate_report_task(self, report_id: str, file_ids: list, params: dict):
     """
-    Background task to process files, run LLM, and generate PDF.
-    Updates the database with 'Complete' or 'Failed' status.
+    Background Celery task — processes files, runs LLM, generates PDF.
+    Updates MongoDB report document with 'Complete' or 'Failed' status.
     """
-    db = SessionLocal()
     try:
-        db_report = db.query(Report).filter(Report.id == report_id).first()
-        if not db_report:
-            logger.error(f"Report {report_id} not found in DB.")
-            return {"status": "error", "message": "Report not found"}
-
-        db_report.status = "Generating"
-        db.commit()
-
-        # Call orchestrator. Note: we pass report_id to orchestrator so it doesn't create a new DB record.
-        report_path = orchestrator.generate_full_report_with_id(report_id, file_paths, params, db)
-        
+        report_path = orchestrator.generate_full_report_with_id(report_id, file_ids, params)
         return {"status": "success", "report_path": str(report_path)}
     except Exception as e:
         logger.error(f"Task failed for report {report_id}: {e}")
-        db_report = db.query(Report).filter(Report.id == report_id).first()
-        if db_report:
-            db_report.status = "Failed"
-            db.commit()
+        update_report_status(report_id, "Failed")
         return {"status": "error", "message": str(e)}
-    finally:
-        db.close()

@@ -1,0 +1,185 @@
+2026-06-03 17:10:34.442 | INFO     | src.ai.llm_engine:__init__:24 - LLM Engine initialised with gemini-flash-latest
+ 
+ -------------- celery@rajs-MacBook-Air-2.local v5.6.3 (recovery)
+--- ***** ----- 
+-- ******* ---- macOS-26.3-arm64-arm-64bit-Mach-O 2026-06-03 17:10:34
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         report_tasks:0x1141eef90
+- ** ---------- .> transport:   redis://localhost:6379/0
+- ** ---------- .> results:     redis://localhost:6379/0
+- *** --- * --- .> concurrency: 8 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . generate_report_task
+
+[2026-06-03 17:10:36,065: INFO/MainProcess] Connected to redis://localhost:6379/0
+[2026-06-03 17:10:36,070: INFO/MainProcess] mingle: searching for neighbors
+[2026-06-03 17:10:37,082: INFO/MainProcess] mingle: all alone
+[2026-06-03 17:10:37,099: INFO/MainProcess] celery@rajs-MacBook-Air-2.local ready.
+[2026-06-03 17:10:37,104: INFO/MainProcess] Task generate_report_task[352986e5-98ea-455a-9834-032c7d1ab798] received
+[2026-06-03 17:10:37,105: INFO/MainProcess] Task generate_report_task[aefa9ba0-9a49-47bb-b4a7-18af1c9f22ff] received
+2026-06-03 17:10:37.105 | INFO     | src.core.orchestrator:generate_full_report_with_id:34 - Starting async report generation for task 6a2010416f4367eddde7623e...
+[2026-06-03 17:10:37,107: INFO/MainProcess] Task generate_report_task[34329c97-edb7-44c5-99ce-fe89f912baf7] received
+2026-06-03 17:10:37.108 | INFO     | src.core.orchestrator:generate_full_report_with_id:34 - Starting async report generation for task 6a2010ce6f4367eddde762f3...
+2026-06-03 17:10:37.114 | INFO     | src.core.orchestrator:generate_full_report_with_id:34 - Starting async report generation for task 6a2010e96f4367eddde762ff...
+2026-06-03 17:10:37.125 | INFO     | database:_connect:23 - Connected to MongoDB at mongodb://localhost:27017/report_generator
+2026-06-03 17:10:37.127 | INFO     | database:_connect:23 - Connected to MongoDB at mongodb://localhost:27017/report_generator
+2026-06-03 17:10:37.127 | INFO     | database:_connect:23 - Connected to MongoDB at mongodb://localhost:27017/report_generator
+2026-06-03 17:10:37.228 | INFO     | src.core.file_parser:parse_file:46 - Parsed Flow_CFD_Ready.csv (type: csv)
+2026-06-03 17:10:37.298 | INFO     | src.core.orchestrator:_run_generation_pipeline:94 - Data profile built (2229 chars). Sending to LLM...
+[2026-06-03 17:10:37,326: INFO/ForkPoolWorker-2] AFC is enabled with max remote calls: 10.
+2026-06-03 17:10:37.823 | INFO     | src.core.file_parser:parse_file:46 - Parsed OGORB_EFD_Ready.csv (type: csv)
+2026-06-03 17:10:37.828 | INFO     | src.core.file_parser:parse_file:46 - Parsed OGORB_EFD_Ready.csv (type: csv)
+2026-06-03 17:10:38.064 | INFO     | src.core.orchestrator:_run_generation_pipeline:94 - Data profile built (2072 chars). Sending to LLM...
+2026-06-03 17:10:38.065 | INFO     | src.core.orchestrator:_run_generation_pipeline:94 - Data profile built (2072 chars). Sending to LLM...
+[2026-06-03 17:10:38,087: INFO/ForkPoolWorker-1] AFC is enabled with max remote calls: 10.
+[2026-06-03 17:10:38,090: INFO/ForkPoolWorker-8] AFC is enabled with max remote calls: 10.
+[2026-06-03 17:11:08,906: INFO/ForkPoolWorker-8] HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent "HTTP/1.1 200 OK"
+2026-06-03 17:11:08.927 | INFO     | src.ai.llm_engine:generate_report_content:287 - Successfully generated full report content for EFD.
+2026-06-03 17:11:08.929 | INFO     | src.viz.graph_generator:create_service_visualizations:352 - Generating EFD visualizations...
+[2026-06-03 17:11:09,049: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:09,081: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:09,277: INFO/ForkPoolWorker-1] HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent "HTTP/1.1 200 OK"
+2026-06-03 17:11:09.308 | INFO     | src.ai.llm_engine:generate_report_content:287 - Successfully generated full report content for EFD.
+2026-06-03 17:11:09.311 | INFO     | src.viz.graph_generator:create_service_visualizations:352 - Generating EFD visualizations...
+[2026-06-03 17:11:09,485: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:09,537: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:10,087: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:10,123: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:10,408: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:10,445: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,213: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,242: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,275: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,310: INFO/ForkPoolWorker-8] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,553: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,602: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,648: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+[2026-06-03 17:11:12,709: INFO/ForkPoolWorker-1] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-06-03 17:11:12.848 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_sales_trend.png to GridFS with ID 6a2012d885cf56db84b88465
+2026-06-03 17:11:12.855 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_trend_line.png to GridFS with ID 6a2012d885cf56db84b88467
+2026-06-03 17:11:12.862 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_scatter.png to GridFS with ID 6a2012d885cf56db84b88469
+2026-06-03 17:11:12.869 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_bar_avg.png to GridFS with ID 6a2012d885cf56db84b8846b
+2026-06-03 17:11:12.877 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_histogram.png to GridFS with ID 6a2012d885cf56db84b8846d
+2026-06-03 17:11:12.884 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_box_spread.png to GridFS with ID 6a2012d885cf56db84b8846f
+2026-06-03 17:11:12.891 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_correlation.png to GridFS with ID 6a2012d885cf56db84b88471
+2026-06-03 17:11:12.896 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_pie.png to GridFS with ID 6a2012d885cf56db84b88473
+2026-06-03 17:11:12.906 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_area.png to GridFS with ID 6a2012d885cf56db84b88475
+2026-06-03 17:11:13.325 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_sales_trend.png to GridFS with ID 6a2012d97670924687b88465
+2026-06-03 17:11:13.330 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_trend_line.png to GridFS with ID 6a2012d97670924687b88467
+2026-06-03 17:11:13.335 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_scatter.png to GridFS with ID 6a2012d97670924687b88469
+2026-06-03 17:11:13.340 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_bar_avg.png to GridFS with ID 6a2012d97670924687b8846b
+2026-06-03 17:11:13.344 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_histogram.png to GridFS with ID 6a2012d97670924687b8846d
+2026-06-03 17:11:13.349 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_box_spread.png to GridFS with ID 6a2012d97670924687b8846f
+2026-06-03 17:11:13.354 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_correlation.png to GridFS with ID 6a2012d97670924687b88471
+2026-06-03 17:11:13.359 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_pie.png to GridFS with ID 6a2012d97670924687b88473
+2026-06-03 17:11:13.364 | INFO     | src.core.mongo_storage:save_file:17 - Saved efd_area.png to GridFS with ID 6a2012d97670924687b88475
+2026-06-03 17:11:13.767 | INFO     | src.export.pdf_builder:build_report:339 - Built PDF report: /var/folders/mr/dtks2b6n60j548xp64s14lmr0000gn/T/tmpdqb75881/CFD_analysis_20260603_171112.pdf
+2026-06-03 17:11:13.776 | INFO     | src.core.mongo_storage:save_file:17 - Saved CFD_analysis_20260603_171112.pdf to GridFS with ID 6a2012d985cf56db84b88477
+2026-06-03 17:11:13.777 | INFO     | src.core.orchestrator:_run_generation_pipeline:243 - Report saved to GridFS with ID: 6a2012d985cf56db84b88477
+[2026-06-03 17:11:13,872: INFO/ForkPoolWorker-8] Task generate_report_task[352986e5-98ea-455a-9834-032c7d1ab798] succeeded in 36.76798816600058s: {'status': 'success', 'report_path': '6a2012d985cf56db84b88477'}
+2026-06-03 17:11:14.089 | INFO     | src.export.pdf_builder:build_report:339 - Built PDF report: /var/folders/mr/dtks2b6n60j548xp64s14lmr0000gn/T/tmphc66aj_g/EFD_analysis_20260603_171113.pdf
+2026-06-03 17:11:14.096 | INFO     | src.core.mongo_storage:save_file:17 - Saved EFD_analysis_20260603_171113.pdf to GridFS with ID 6a2012da7670924687b88477
+2026-06-03 17:11:14.096 | INFO     | src.core.orchestrator:_run_generation_pipeline:243 - Report saved to GridFS with ID: 6a2012da7670924687b88477
+[2026-06-03 17:11:14,170: INFO/ForkPoolWorker-1] Task generate_report_task[aefa9ba0-9a49-47bb-b4a7-18af1c9f22ff] succeeded in 37.06395287499981s: {'status': 'success', 'report_path': '6a2012da7670924687b88477'}
+[2026-06-03 17:11:37,521: INFO/ForkPoolWorker-2] HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent "HTTP/1.1 200 OK"
+2026-06-03 17:11:37.541 | INFO     | src.ai.llm_engine:generate_report_content:287 - Successfully generated full report content for CFD.
+2026-06-03 17:11:37.544 | INFO     | src.viz.graph_generator:create_service_visualizations:352 - Generating CFD visualizations...
+2026-06-03 17:11:37.552 | INFO     | src.viz.graph_generator:_create_cfd_plots:91 - CFD: Filtered spatial plots to latest step t = 0.1 (968 rows)
+2026-06-03 17:11:40.474 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_mesh_display.png to GridFS with ID 6a2012f4cff2f88e1db88465
+2026-06-03 17:11:40.478 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_scalar_pressure.png to GridFS with ID 6a2012f4cff2f88e1db88467
+2026-06-03 17:11:40.483 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_scalar_velocity.png to GridFS with ID 6a2012f4cff2f88e1db88469
+2026-06-03 17:11:40.488 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_streamlines.png to GridFS with ID 6a2012f4cff2f88e1db8846b
+2026-06-03 17:11:40.492 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_vector_velocity.png to GridFS with ID 6a2012f4cff2f88e1db8846d
+2026-06-03 17:11:40.503 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_velocity_profile.png to GridFS with ID 6a2012f4cff2f88e1db8846f
+2026-06-03 17:11:40.507 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_convergence.png to GridFS with ID 6a2012f4cff2f88e1db88471
+2026-06-03 17:11:40.511 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_trend_line.png to GridFS with ID 6a2012f4cff2f88e1db88473
+2026-06-03 17:11:40.515 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_scatter.png to GridFS with ID 6a2012f4cff2f88e1db88475
+2026-06-03 17:11:40.518 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_bar_avg.png to GridFS with ID 6a2012f4cff2f88e1db88477
+2026-06-03 17:11:40.524 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_histogram.png to GridFS with ID 6a2012f4cff2f88e1db88479
+2026-06-03 17:11:40.532 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_box_spread.png to GridFS with ID 6a2012f4cff2f88e1db8847b
+2026-06-03 17:11:40.537 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_correlation.png to GridFS with ID 6a2012f4cff2f88e1db8847d
+2026-06-03 17:11:40.542 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_pie.png to GridFS with ID 6a2012f4cff2f88e1db8847f
+2026-06-03 17:11:40.546 | INFO     | src.core.mongo_storage:save_file:17 - Saved cfd_area.png to GridFS with ID 6a2012f4cff2f88e1db88481
+2026-06-03 17:11:41.534 | INFO     | src.export.pdf_builder:build_report:339 - Built PDF report: /var/folders/mr/dtks2b6n60j548xp64s14lmr0000gn/T/tmpa7n7s6t8/CFD_analysis_20260603_171140.pdf
+2026-06-03 17:11:41.541 | INFO     | src.core.mongo_storage:save_file:17 - Saved CFD_analysis_20260603_171140.pdf to GridFS with ID 6a2012f5cff2f88e1db88483
+2026-06-03 17:11:41.542 | INFO     | src.core.orchestrator:_run_generation_pipeline:243 - Report saved to GridFS with ID: 6a2012f5cff2f88e1db88483
+[2026-06-03 17:11:41,554: INFO/ForkPoolWorker-2] Task generate_report_task[34329c97-edb7-44c5-99ce-fe89f912baf7] succeeded in 64.44622908299789s: {'status': 'success', 'report_path': '6a2012f5cff2f88e1db88483'}
+[2026-06-03 22:30:20,720: WARNING/MainProcess] consumer: Connection to broker lost. Trying to re-establish the connection...
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 346, in start
+    blueprint.start(self)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+    ~~~~~~~~~~^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 788, in start
+    c.loop(*c.loop_args())
+    ~~~~~~^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/celery/worker/loops.py", line 97, in asynloop
+    next(loop)
+    ~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/kombu/asynchronous/hub.py", line 377, in create_loop
+    cb(*cbargs)
+    ~~^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/kombu/transport/redis.py", line 1394, in on_readable
+    self.cycle.on_readable(fileno)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/kombu/transport/redis.py", line 579, in on_readable
+    chan.handlers[type]()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/kombu/transport/redis.py", line 931, in _receive
+    ret.append(self._receive_one(c))
+               ~~~~~~~~~~~~~~~~~^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/kombu/transport/redis.py", line 941, in _receive_one
+    response = c.parse_response()
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/client.py", line 1161, in parse_response
+    response = self._execute(conn, try_read)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/client.py", line 1114, in _execute
+    response = conn.retry.call_with_retry(
+        lambda: command(*args, **kwargs),
+        failure_callback,
+        with_failure_count=True,
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/retry.py", line 132, in call_with_retry
+    raise error
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/retry.py", line 120, in call_with_retry
+    return do()
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/client.py", line 1115, in <lambda>
+    lambda: command(*args, **kwargs),
+            ~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/client.py", line 1159, in try_read
+    return conn.read_response(disconnect_on_error=False, push_request=True)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/connection.py", line 1342, in read_response
+    response = self._parser.read_response(disable_decoding=disable_decoding)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/_parsers/resp2.py", line 15, in read_response
+    result = self._read_response(disable_decoding=disable_decoding)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/_parsers/resp2.py", line 25, in _read_response
+    raw = self._buffer.readline()
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/_parsers/socket.py", line 115, in readline
+    self._read_from_socket()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/redis/_parsers/socket.py", line 68, in _read_from_socket
+    raise ConnectionError(SERVER_CLOSED_CONNECTION_ERROR)
+redis.exceptions.ConnectionError: Connection closed by server.
+[2026-06-03 22:30:20,788: WARNING/MainProcess] /Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/celery/worker/consumer/consumer.py:397: CPendingDeprecationWarning: 
+In Celery 5.1 we introduced an optional breaking change which
+on connection loss cancels all currently executed tasks with late acknowledgement enabled.
+These tasks cannot be acknowledged as the connection is gone, and the tasks are automatically redelivered
+back to the queue. You can enable this behavior using the worker_cancel_long_running_tasks_on_connection_loss
+setting. In Celery 5.1 it is set to False by default. The setting will be set to True by default in Celery 6.0.
+
+  warnings.warn(CANCEL_TASKS_BY_DEFAULT, CPendingDeprecationWarning)
+
+[2026-06-03 22:30:20,800: INFO/MainProcess] Connected to redis://localhost:6379/0
+[2026-06-03 22:30:20,803: INFO/MainProcess] mingle: searching for neighbors
+[2026-06-03 22:30:21,816: INFO/MainProcess] mingle: all alone
+
+worker: Warm shutdown (MainProcess)

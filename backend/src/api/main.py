@@ -1,17 +1,16 @@
-from fastapi import FastAPI, UploadFile, File, Form, Depends, BackgroundTasks, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from src.core.orchestrator import ReportOrchestrator
 from src.core.data_validator import DataValidator
 from src.core.tasks import generate_report_task
-from database import get_db
-from models import Report
+from src.core.mongo_storage import MongoStorage
+from models import create_report, get_report, list_reports
 import shutil
 import tempfile
 import pandas as pd
 from pathlib import Path
 from config.settings import UPLOADS_DIR, PROCESSED_DIR
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import datetime
 
@@ -27,96 +26,104 @@ app.add_middleware(
 
 orchestrator = ReportOrchestrator()
 
+
 @app.post("/generate-report")
 async def generate_report(
     files: list[UploadFile] = File(...),
     industry: str = Form(...),
     service: str = Form(...),
     project_name: str = Form("Untitled"),
-    db: Session = Depends(get_db)
 ):
-    # Save uploaded files quickly
-    uploaded_paths = []
+    # Save uploaded files to MongoDB GridFS
+    uploaded_file_ids = []
     for file in files:
-        file_path = UPLOADS_DIR / file.filename
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        uploaded_paths.append(str(file_path))
-    
-    # Create DB record immediately
-    db_report = Report(
+        file_content = await file.read()
+        file_id = MongoStorage.save_file(file_content, file.filename)
+        uploaded_file_ids.append(file_id)
+
+    # Create MongoDB report record immediately
+    report_id = create_report(
         project_name=project_name,
         industry=industry,
         service=service,
-        status="Queued"
+        status="Queued",
     )
-    db.add(db_report)
-    db.commit()
-    db.refresh(db_report)
-    
+
     # Dispatch Celery background task
     params = {"industry": industry, "service": service, "project_name": project_name}
-    generate_report_task.delay(db_report.id, uploaded_paths, params)
-    
+    generate_report_task.delay(report_id, uploaded_file_ids, params)
+
     return {
         "status": "success",
         "message": "Report generation queued",
-        "job_id": db_report.id
+        "job_id": report_id,
     }
+
 
 @app.get("/job-status/{job_id}")
-def get_job_status(job_id: int, db: Session = Depends(get_db)):
-    db_report = db.query(Report).filter(Report.id == job_id).first()
-    if not db_report:
+def get_job_status(job_id: str):
+    report = get_report(job_id)
+    if not report:
         raise HTTPException(status_code=404, detail="Job not found")
-        
+
     return {
-        "job_id": db_report.id,
-        "status": db_report.status,
-        "file_name": Path(db_report.file_path).name if db_report.file_path else None,
-        "download_url": f"/download/{Path(db_report.file_path).name}" if db_report.file_path else None,
+        "job_id": report["id"],
+        "status": report["status"],
+        "file_name": Path(report["file_path"]).name if report.get("file_path") else None,
+        "download_url": f"/download/{report['file_path']}" if report.get("file_path") else None,
     }
 
+
 @app.get("/reports")
-def list_reports(db: Session = Depends(get_db)):
-    reports = db.query(Report).order_by(Report.created_at.desc()).all()
+def list_all_reports():
+    reports = list_reports()
     return [
         {
-            "id": r.id,
-            "project_name": r.project_name,
-            "industry": r.industry,
-            "service": r.service,
-            "status": r.status,
-            "created_at": r.created_at.isoformat(),
-            "file_name": Path(r.file_path).name if r.file_path else None,
-            "download_url": f"/download/{Path(r.file_path).name}" if r.file_path else None,
+            "id": r["id"],
+            "project_name": r["project_name"],
+            "industry": r["industry"],
+            "service": r["service"],
+            "status": r["status"],
+            "created_at": r["created_at"],
+            "file_name": Path(r["file_path"]).name if r.get("file_path") else None,
+            "download_url": f"/download/{r['file_path']}" if r.get("file_path") else None,
         }
         for r in reports
     ]
 
+
 @app.get("/reports/{report_id}")
-def get_report(report_id: int, db: Session = Depends(get_db)):
-    r = db.query(Report).filter(Report.id == report_id).first()
+def get_single_report(report_id: str):
+    r = get_report(report_id)
     if not r:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Report not found")
     return {
-        "id": r.id,
-        "project_name": r.project_name,
-        "industry": r.industry,
-        "service": r.service,
-        "status": r.status,
-        "created_at": r.created_at.isoformat(),
-        "file_name": Path(r.file_path).name if r.file_path else None,
-        "download_url": f"/download/{Path(r.file_path).name}" if r.file_path else None,
+        "id": r["id"],
+        "project_name": r["project_name"],
+        "industry": r["industry"],
+        "service": r["service"],
+        "status": r["status"],
+        "created_at": r["created_at"],
+        "file_name": Path(r["file_path"]).name if r.get("file_path") else None,
+        "download_url": f"/download/{r['file_path']}" if r.get("file_path") else None,
     }
 
-@app.get("/download/{filename}")
-def download_report(filename: str):
-    file_path = PROCESSED_DIR / filename
-    if file_path.exists():
-        return FileResponse(file_path)
-    return {"error": "File not found"}
+
+@app.get("/download/{file_id}")
+def download_report(file_id: str):
+    grid_out = MongoStorage.get_file(file_id)
+    if not grid_out:
+        return {"error": "File not found"}
+
+    def iterfile():
+        yield from grid_out
+
+    return StreamingResponse(
+        iterfile(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{grid_out.filename}"'},
+    )
+
 
 @app.get("/health")
 def health_check():
@@ -124,6 +131,7 @@ def health_check():
 
 
 validator = DataValidator()
+
 
 @app.post("/validate-files")
 async def validate_files(
@@ -138,13 +146,12 @@ async def validate_files(
     tmp_paths = []
     try:
         for file in files:
-            # Save to temp location for reading
             suffix = Path(file.filename).suffix
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 shutil.copyfileobj(file.file, tmp)
                 tmp_paths.append(tmp.name)
             result = validator.validate(tmp_paths[-1], service)
-            result["filename"] = file.filename  # Override with original filename
+            result["filename"] = file.filename
             results.append(result)
     finally:
         import os
@@ -156,6 +163,25 @@ async def validate_files(
 
     overall_valid = all(r["valid"] for r in results)
     return {"overall_valid": overall_valid, "files": results}
+
+
+def clean_nans(obj):
+    import math
+    if isinstance(obj, list):
+        return [clean_nans(x) for x in obj]
+    elif isinstance(obj, dict):
+        return {k: clean_nans(v) for k, v in obj.items()}
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+    elif obj is None:
+        return None
+    try:
+        if pd.isna(obj):
+            return None
+    except Exception:
+        pass
+    return obj
 
 
 @app.post("/preview-data")
@@ -178,18 +204,18 @@ async def preview_data(
         else:
             raise HTTPException(status_code=422, detail=f"Unsupported file type: {suffix}")
 
-        # Replace NaN with None for clean JSON serialization
         df = df.where(pd.notnull(df), None)
         columns = list(df.columns)
         numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
         rows = df.to_dict(orient="records")
+        rows = clean_nans(rows)
 
         return {
             "filename": file.filename,
             "columns": columns,
             "numeric_columns": numeric_columns,
             "row_count": len(rows),
-            "rows": rows
+            "rows": rows,
         }
     finally:
         import os
@@ -197,3 +223,4 @@ async def preview_data(
             os.unlink(tmp_path)
         except Exception:
             pass
+
