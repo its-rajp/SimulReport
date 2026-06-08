@@ -3,15 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.orchestrator import ReportOrchestrator
 from src.core.data_validator import DataValidator
 from src.core.tasks import generate_report_task
-from src.core.mongo_storage import MongoStorage
+from src.core.firebase_storage import CloudStorage
 from models import create_report, get_report, list_reports
 import shutil
 import tempfile
 import pandas as pd
 from pathlib import Path
 from config.settings import UPLOADS_DIR, PROCESSED_DIR
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from fastapi.responses import Response
 import datetime
 
 app = FastAPI(title="AI Report Generator API")
@@ -38,7 +37,7 @@ async def generate_report(
     uploaded_file_ids = []
     for file in files:
         file_content = await file.read()
-        file_id = MongoStorage.save_file(file_content, file.filename)
+        file_id = CloudStorage.save_file(file_content, file.filename)
         uploaded_file_ids.append(file_id)
 
     # Create MongoDB report record immediately
@@ -111,17 +110,14 @@ def get_single_report(report_id: str):
 
 @app.get("/download/{file_id}")
 def download_report(file_id: str):
-    grid_out = MongoStorage.get_file(file_id)
-    if not grid_out:
+    file_bytes = CloudStorage.get_file(file_id)
+    if not file_bytes:
         return {"error": "File not found"}
 
-    def iterfile():
-        yield from grid_out
-
-    return StreamingResponse(
-        iterfile(),
+    return Response(
+        content=file_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{grid_out.filename}"'},
+        headers={"Content-Disposition": f'attachment; filename="{file_id}"'},
     )
 
 

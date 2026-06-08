@@ -31,3 +31,7 @@ backend/data/processed/*
 ._*
 .Spotlight-V100
 .Trashes
+
+# Firebase Credentials
+*firebase-adminsdk*.json
+serviceAccountKey.json

@@ -1,45 +1,52 @@
 """
-database.py — MongoDB-native connection module.
-Replaces the old SQLAlchemy engine/session entirely.
+database.py — Firebase connection module.
+Replaces the old MongoDB connection entirely.
 """
-from pymongo import MongoClient, ASCENDING, DESCENDING
-import gridfs
+import firebase_admin
+from firebase_admin import credentials, firestore, storage
 import os
 from loguru import logger
 
-_MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/report_generator")
-
-_client = None
 _db = None
-_fs = None
+_bucket = None
+_initialized = False
 
 def _connect():
-    global _client, _db, _fs
-    if _client is None:
+    global _db, _bucket, _initialized
+    if not _initialized:
         try:
-            _client = MongoClient(_MONGO_URI, serverSelectionTimeoutMS=5000, connect=False)
-            _db = _client.get_default_database()
-            _fs = gridfs.GridFS(_db)
-            logger.info(f"Connected to MongoDB at {_MONGO_URI}")
+            # We will use the default app credentials if FIREBASE_CREDENTIALS_PATH is not set
+            cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "./serviceAccountKey.json")
+            bucket_name = os.getenv("FIREBASE_STORAGE_BUCKET", "your-project-id.appspot.com")
+            
+            if os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred, {
+                    'storageBucket': bucket_name
+                })
+            else:
+                logger.warning(f"Firebase credentials not found at {cred_path}. Trying default application credentials.")
+                firebase_admin.initialize_app(options={'storageBucket': bucket_name})
+                
+            _db = firestore.client()
+            _bucket = storage.bucket()
+            _initialized = True
+            logger.info("Connected to Firebase")
         except Exception as e:
-            logger.error(f"Could not connect to MongoDB: {e}")
-            raise RuntimeError("MongoDB is not running.") from e
+            logger.error(f"Could not connect to Firebase: {e}")
+            raise RuntimeError("Firebase is not initialized.") from e
 
 def get_db():
-    """Returns the main MongoDB database instance."""
+    """Returns the main Firestore database instance."""
     _connect()
     return _db
 
 def get_reports_collection():
-    """Returns the 'reports' collection with indexes ensured."""
+    """Returns the 'reports' Firestore collection reference."""
     _connect()
-    col = _db["reports"]
-    # Ensure efficient indexes on frequently-queried fields
-    col.create_index([("created_at", DESCENDING)])
-    col.create_index([("status", ASCENDING)])
-    return col
+    return _db.collection('reports')
 
-def get_gridfs():
-    """Returns the GridFS instance for binary file storage."""
+def get_storage_bucket():
+    """Returns the Firebase Storage bucket instance."""
     _connect()
-    return _fs
+    return _bucket

@@ -35,7 +35,7 @@ orchestrator = ReportOrchestrator()
 def generate_report_task(self, report_id: str, file_ids: list, params: dict):
     """
     Background Celery task — processes files, runs LLM, generates PDF.
-    Updates MongoDB report document with 'Complete' or 'Failed' status.
+    Updates Firestore report document with 'Complete' or 'Failed' status.
     """
     try:
         report_path = orchestrator.generate_full_report_with_id(report_id, file_ids, params)
