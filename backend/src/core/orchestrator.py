@@ -9,7 +9,7 @@ import traceback
 import tempfile
 import shutil
 import pandas as pd
-from src.core.firebase_storage import CloudStorage
+from src.core.mongo_storage import MongoStorage
 
 
 class ReportOrchestrator:
@@ -37,22 +37,19 @@ class ReportOrchestrator:
         return self._run_generation_pipeline(report_id, file_paths, params)
 
     def _run_generation_pipeline(self, report_id: str, file_ids: list, params: dict):
-        """Core pipeline logic — downloads files from Firebase Storage, runs LLM, builds PDF,
-        uploads result back to Firebase Storage, and updates the report status in Firestore."""
+        """Core pipeline logic — downloads files from GridFS, runs LLM, builds PDF,
+        uploads result back to GridFS, and updates the report status in MongoDB."""
 
         temp_dir = tempfile.mkdtemp()
         try:
-            # 1. Download files from Firebase Storage to a temp directory
+            # 1. Download files from MongoDB GridFS to a temp directory
             temp_paths = []
             for file_id in file_ids:
-                # file_id here is the UUID_filename string we saved in CloudStorage
-                file_bytes = CloudStorage.get_file(file_id)
-                if file_bytes:
-                    # extract the original filename from the stored file_id
-                    original_filename = file_id.split('_', 1)[-1] if '_' in file_id else file_id
-                    temp_path = Path(temp_dir) / original_filename
+                grid_out = MongoStorage.get_file(file_id)
+                if grid_out:
+                    temp_path = Path(temp_dir) / grid_out.filename
                     with open(temp_path, "wb") as f:
-                        f.write(file_bytes)
+                        f.write(grid_out.read())
                     temp_paths.append(str(temp_path))
 
             # 2. Parse all files
@@ -123,7 +120,7 @@ class ReportOrchestrator:
                         )
                     )
 
-            # Upload visualization images to Firebase Storage and map their IDs
+            # Upload visualization images to GridFS and map their IDs
             import os
             import numpy as np
             gridfs_image_ids = {}
@@ -132,10 +129,10 @@ class ReportOrchestrator:
                     try:
                         with open(path, "rb") as img_f:
                             img_bytes = img_f.read()
-                        gridfs_id = CloudStorage.save_file(img_bytes, os.path.basename(path))
+                        gridfs_id = MongoStorage.save_file(img_bytes, os.path.basename(path))
                         gridfs_image_ids[name] = gridfs_id
                     except Exception as e:
-                        logger.error(f"Failed to upload visualization {name} to Firebase Storage: {e}")
+                        logger.error(f"Failed to upload visualization {name} to GridFS: {e}")
 
             # Compute statistics and populate dashboard_data
             dashboard_data = {}
@@ -343,14 +340,14 @@ class ReportOrchestrator:
                 report_content, viz_files, params, output_dir=Path(temp_dir)
             )
 
-            # 7. Upload final PDF to Firebase Storage
+            # 7. Upload final PDF to MongoDB GridFS
             with open(report_path, "rb") as f:
                 pdf_bytes = f.read()
-            final_pdf_id = CloudStorage.save_file(pdf_bytes, Path(report_path).name)
+            final_pdf_id = MongoStorage.save_file(pdf_bytes, Path(report_path).name)
 
-            logger.info(f"Report saved to Firebase Storage with ID: {final_pdf_id}")
+            logger.info(f"Report saved to GridFS with ID: {final_pdf_id}")
 
-            # 8. Update report status in Firestore
+            # 8. Update report status in MongoDB
             update_report_status(report_id, "Complete", file_path=final_pdf_id, dashboard_data=dashboard_data)
 
             return final_pdf_id
